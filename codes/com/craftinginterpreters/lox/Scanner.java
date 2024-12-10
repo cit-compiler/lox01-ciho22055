@@ -89,11 +89,19 @@ class Scanner {
       default:
        if(isDigit(c)){
         number();
+      } else if (isAlpha(c)) {
+        identifier();
        }else{
         Lox.error(line, "Unexpected character.");
        }
        break;
     }
+  }
+
+  private void identifier() {
+    while (isAlphaNumeric(peek())) advance();
+
+    addToken(IDENTIFIER);
   }
 
   private void number(){
