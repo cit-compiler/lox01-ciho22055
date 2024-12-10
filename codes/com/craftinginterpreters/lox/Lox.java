@@ -9,40 +9,52 @@ import java.nio.file.Paths;
 import java.util.List;
 
 public class Lox {
+  static boolean hadError = false;
   public static void main(String[] args) throws IOException {
     if (args.length > 1) {
       System.out.println("Usage: jlox [script]");
-      System.exit(64);
+      System.exit(64); 
     } else if (args.length == 1) {
       runFile(args[0]);
     } else {
       runPrompt();
     }
   }
-
-  // ファイルを読み込んで実行するメソッド
   private static void runFile(String path) throws IOException {
     byte[] bytes = Files.readAllBytes(Paths.get(path));
-    String source = new String(bytes, Charset.defaultCharset());
-    run(source);
+    run(new String(bytes, Charset.defaultCharset()));
+    if (hadError) System.exit(65);
   }
-
-  // 対話型プロンプトを実行するメソッド
   private static void runPrompt() throws IOException {
     InputStreamReader input = new InputStreamReader(System.in);
     BufferedReader reader = new BufferedReader(input);
 
-    while (true) {
+    for (;;) { 
       System.out.print("> ");
       String line = reader.readLine();
-      if (line == null || line.equals("exit")) break; // プロンプトの終了条件
+      if (line == null) break;
       run(line);
+      hadError = false;
     }
   }
-
-  // ソースコードを実行するメソッド
   private static void run(String source) {
-    // 現時点ではエラー処理を追加するだけ（後で実装を拡張可能）
-    System.out.println("Running: " + source);
+    Scanner scanner = new Scanner(source);
+    List<Token> tokens = scanner.scanTokens();
+
+    // For now, just print the tokens.
+    for (Token token : tokens) {
+      System.out.println(token);
+    }
   }
+  static void error(int line, String message) {
+    report(line, "", message);
+  }
+
+  private static void report(int line, String where,
+                             String message) {
+    System.err.println(
+        "[line " + line + "] Error" + where + ": " + message);
+    hadError = true;
+  }
+
 }
